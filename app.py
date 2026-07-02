@@ -1,14 +1,19 @@
 import os
+# Configure CPU thread limits and memory constraints BEFORE importing any ML packages
+# This prevents RAM spikes and OOM (Out Of Memory) crashes on cloud servers like Render Free Tier.
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import json
 import urllib.parse
 import pandas as pd
 import numpy as np
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# Import the pipeline runner
-from run_pipeline import run_pipeline
-
-PORT = 8000
+PORT = int(os.environ.get("PORT", 8000))
 
 class RecruiterDashboardHandler(BaseHTTPRequestHandler):
     """
@@ -159,6 +164,9 @@ class RecruiterDashboardHandler(BaseHTTPRequestHandler):
 
             print(f"\n[Web Server] Triggering ranking pipeline for role: {job_role}")
             
+            # Dynamic import here to keep server boot footprint tiny (prevents OOM on startup)
+            from run_pipeline import run_pipeline
+            
             # Execute the ranking pipeline programmatically
             final_df, explanations = run_pipeline(
                 job_role=job_role,
@@ -176,6 +184,10 @@ class RecruiterDashboardHandler(BaseHTTPRequestHandler):
                 "explanations": explanations
             }
             self._send_json(response_payload)
+            
+            # Trigger garbage collection immediately to release model RAM
+            import gc
+            gc.collect()
             
         except Exception as e:
             print(f"[Web Server] Pipeline execution failed: {e}")
