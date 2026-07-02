@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merit Lens AI - Recruiter Portal</title>
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation & Control Panel -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-circle-nodes brand-logo"></i>
+                <div class="brand-text">
+                    <h1>Merit Lens AI</h1>
+                    <span>Bias-Neutral Matching</span>
+                </div>
+            </div>
+            
+            <form id="pipeline-form" class="control-panel-form">
+                <div class="form-section">
+                    <label for="job-role"><i class="fa-solid fa-briefcase"></i> Target Job Role</label>
+                    <select id="job-role" name="job_role">
+                        <option value="Data Scientist" selected>Data Scientist</option>
+                        <option value="AI Researcher">AI Researcher</option>
+                        <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                        <option value="Software Engineer">Software Engineer</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="job-desc"><i class="fa-solid fa-file-invoice"></i> Custom Job Description</label>
+                    <textarea id="job-desc" name="job_desc" placeholder="Leave empty to use standard role profile, or enter a custom job description here..."></textarea>
+                </div>
+
+                <div class="form-section">
+                    <label for="req-skills"><i class="fa-solid fa-tags"></i> Required Skills (Comma-separated)</label>
+                    <input type="text" id="req-skills" name="req_skills" placeholder="e.g. Python, SQL, React">
+                    <small class="help-text">Leave blank to use default role skills.</small>
+                </div>
+                <button type="submit" id="submit-btn" class="glow-button">
+                    <i class="fa-solid fa-bolt"></i> Run Ranking Engine
+                </button>
+            </form>
+
+            <div class="upload-section" style="border-top: 1px solid var(--border-color); padding-top: 1.25rem; margin-top: 1rem;">
+                <label for="csv-upload" style="font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-indigo); margin-right: 0.25rem;"></i> Upload Candidate CSV
+                </label>
+                <input type="file" id="csv-upload" accept=".csv" style="display: none;">
+                <button type="button" id="upload-btn" class="tool-btn" style="width: 100%; justify-content: center; background-color: rgba(99, 102, 241, 0.06); border-color: var(--border-glow);">
+                    <i class="fa-solid fa-upload"></i> Choose CSV File
+                </button>
+                <div id="upload-status" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.4rem; line-height: 1.3;"></div>
+            </div>
+
+            <div class="sidebar-footer">
+                <p>Status: <span class="status-indicator online">System Ready</span></p>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Workspace -->
+        <main class="dashboard-workspace">
+            <header class="workspace-header">
+                <div class="header-title">
+                    <h2>Candidate Pool Dashboard</h2>
+                    <p>Fair, explainable, and multi-dimensional candidate evaluation.</p>
+                </div>
+                <div class="user-profile">
+                    <i class="fa-solid fa-user-tie"></i> Recruiter Mode
+                </div>
+            </header>
+
+            <!-- Key Metrics Overview -->
+            <section class="overview-metrics">
+                <div class="metric-card">
+                    <div class="metric-icon blue"><i class="fa-solid fa-users"></i></div>
+                    <div class="metric-details">
+                        <span class="metric-label">Evaluated Pool</span>
+                        <h3 id="metric-total-candidates">-</h3>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon purple"><i class="fa-solid fa-award"></i></div>
+                    <div class="metric-details">
+                        <span class="metric-label">Top Overall Match</span>
+                        <h3 id="metric-top-score">-</h3>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon green"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="metric-details">
+                        <span class="metric-label">Average Growth Score</span>
+                        <h3 id="metric-avg-growth">-</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search, Filter and Actions Toolbar -->
+            <section class="toolbar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="Search candidate index, skills, or education...">
+                </div>
+                <div class="filter-actions" style="display: flex; gap: 0.5rem;">
+                    <button id="download-btn" class="tool-btn"><i class="fa-solid fa-download"></i> Download Pool</button>
+                    <button id="refresh-btn" class="tool-btn"><i class="fa-solid fa-arrows-rotate"></i> Reload Data</button>
+                </div>
+            </section>
+
+            <!-- Candidates Datagrid -->
+            <section class="candidates-table-container">
+                <table class="candidates-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Profile ID</th>
+                            <th>Education</th>
+                            <th>Experience</th>
+                            <th>Growth Score</th>
+                            <th>Overall Fit</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candidates-tbody">
+                        <tr>
+                            <td colspan="7" class="loading-state">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Initializing workspace...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <div id="load-more-container" class="load-more-container">
+                <button id="load-more-btn" class="tool-btn load-more-btn">
+                    <i class="fa-solid fa-chevron-down"></i> Load More Candidates
+                </button>
+            </div>
+        </main>
+
+        <!-- Explanatory Slide-out Drawer -->
+        <aside id="explanation-drawer" class="drawer">
+            <div class="drawer-header">
+                <div class="drawer-title">
+                    <i class="fa-solid fa-brain"></i>
+                    <h3>Candidate Evaluation Breakdown</h3>
+                </div>
+                <button id="close-drawer-btn" class="close-btn">&times;</button>
+            </div>
+            
+            <div id="drawer-content" class="drawer-content">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </aside>
+    </div>
+
+    <!-- Processing/Loading Screen Overlay -->
+    <div id="loading-overlay" class="overlay">
+        <div class="loader-content">
+            <i class="fa-solid fa-circle-notch fa-spin loader-icon"></i>
+            <h3>Analyzing Candidate Profiles...</h3>
+            <p>Sentence transformers are generating candidate embeddings, mapping transferable skills, and running hybrid evaluations.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script src="/static/app.js?v=3"></script>
+</body>
+</html>
