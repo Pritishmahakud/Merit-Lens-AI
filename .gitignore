@@ -34,15 +34,9 @@ env/
 # Environment Variables Config
 .env
 
-# Data Files (Avoid pushing heavy datasets & cache to GitHub)
-*.csv
-*.json
-!candidate_explanations.json  # Optional: keep if you want to ship a default pre-run set of explanations
-# If you want to keep a small sample of explanations/candidates for default rendering, you can commit them,
-# otherwise ignore all generated output CSVs:
+# Data Files (Keep raw dataset, ignore large caches & generated ranked outputs)
 ranked_candidates.csv
 processed_resume_data.csv
-AI_Resume_Screening.csv
 candidate_explanations.json
 
 # Jupyter Notebook Checkpoints
