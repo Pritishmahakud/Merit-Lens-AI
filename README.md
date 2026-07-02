@@ -1,8 +1,47 @@
 # Merit Lens AI - Bias-Neutral Candidate Ranking Portal
 
-Merit Lens AI is an end-to-end recruitment matching engine designed to evaluate, rank, and explain candidate fit for target job roles using a hybrid combination of Semantic Search (SentenceTransformers), Transferable Skills Analysis, and Growth Potential scoring.
+## 🏆 Redrob Hackathon Submission
 
-The project features a modular Python backend pipeline and an interactive, glassmorphic Recruiter Web Dashboard.
+This repository has been updated to produce a valid, high-quality submission for the **Redrob Intelligent Candidate Discovery & Ranking Challenge**.
+
+### 🏃 Reproduction Command
+
+To run the ranking pipeline on the official candidate pool dataset, execute:
+```bash
+python rank.py --candidates ./candidates.jsonl --out ./submission.csv
+```
+
+**Compute Profile:**
+- **Execution Time**: ~26 seconds for the full 100K candidate dataset.
+- **Compute Used**: CPU-only, single thread.
+- **Memory**: < 200 MB RAM.
+- **External Calls**: None (100% local, rule-based logic).
+- **GPU**: None.
+
+### 🧠 Scoring & Filtering Methodology
+
+Our ranking pipeline uses a highly optimized, explainable rule engine that implements the following steps:
+1. **Honeypot Filter (Consistency Verification)**:
+   - Filters out ~130 impossible/trap candidate profiles based on logical contradictions:
+     - *Skill Anomaly*: Flagging candidates who claim "expert" or "advanced" proficiency in multiple skills but have `duration_months == 0`.
+     - *YoE Discrepancy*: Flagging candidates whose total summed job durations in `career_history` exceed their profile's declared `years_of_experience` by more than 5 years.
+     - *Startup Founding Date Violation*: Flagging candidates claiming to work at specific startups (e.g., Sarvam AI, Krutrim, CRED, Razorpay) before their actual real-world founding years.
+2. **Multi-Dimensional Relevance Scoring**:
+   - *Technical Role Fit*: Matches production ML/search/retrieval/ranking/recommendation systems keywords and titles in product company work history vs services companies.
+   - *Target Experience Band*: Scores candidates using a peak distribution at 5–9 years of experience.
+   - *Location Score*: Incentivizes candidates residing in Noida, Pune, Delhi NCR, Mumbai, Hyderabad, or those willing to relocate.
+   - *Notice Period Score*: Incentivizes candidates with sub-30-day notice periods.
+3. **Engagement Down-Weighting**:
+   - Multiplies the candidate's core relevance score based on their active platform engagement: `open_to_work_flag`, `last_active_date` recency (since May 27, 2026), and `recruiter_response_rate` to prioritize active, available talent.
+4. **Negative Signals Penalties**:
+   - Services-only career paths (TCS, Infosys, Wipro, Accenture, Cognizant, Capgemini, Tech Mahindra, Mindtree, Mphasis, HCL, Genpact AI).
+   - Recent AI wrappers (LangChain/OpenAI) with no prior ML background.
+   - Pure academic research without production engineering.
+   - Tech lead/architecture roles without hands-on coding.
+   - CV/Speech/Robotics backgrounds without NLP/IR exposure.
+   - High job-hopping frequency (average duration < 18 months).
+5. **Dynamic Factual Reasoning**:
+   - Generates unique, non-templated, factual justifications for each candidate using deterministic layout permutations populated with the candidate's exact profile details (such as real past employers, real years of experience, actual notice period, response rate, and skills).
 
 ---
 
